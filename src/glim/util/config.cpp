@@ -5,9 +5,9 @@
 
 namespace glim {
 
-GlobalConfig* GlobalConfig::inst = nullptr;
+GlobalConfig *GlobalConfig::inst = nullptr;
 
-Config::Config(const std::string& config_filename) {
+Config::Config(const std::string &config_filename) {
   nlohmann::json json;
   if (config_filename.empty()) {
     config = json;
@@ -26,8 +26,8 @@ Config::Config(const std::string& config_filename) {
 
 Config::~Config() {}
 
-void Config::save(const std::string& path) const {
-  const auto& json = std::any_cast<const nlohmann::json&>(config);
+void Config::save(const std::string &path) const {
+  const auto &json = std::any_cast<const nlohmann::json &>(config);
 
   std::ofstream ofs(path);
   ofs << std::setw(2) << json << std::endl;
@@ -51,7 +51,8 @@ DEFINE_CONFIG_IO_SPECIALIZATION(Eigen::Isometry3d)
 
 DEFINE_CONFIG_IO_SPECIALIZATION(std::vector<Eigen::Isometry3d>)
 
-GlobalConfig* GlobalConfig::instance(const std::string& config_path, bool override_path) {
+GlobalConfig *GlobalConfig::instance(const std::string &config_path,
+                                     bool               override_path) {
   if (inst == nullptr || override_path) {
     if (inst) {
       delete inst;
@@ -63,20 +64,23 @@ GlobalConfig* GlobalConfig::instance(const std::string& config_path, bool overri
   return inst;
 }
 
-std::string GlobalConfig::get_config_path(const std::string& config_name) {
-  auto config = instance();
-  const std::string directory = config->param<std::string>("global", "config_path", ".");
-  const std::string filename = config->param<std::string>("global", config_name, config_name + ".json");
+std::string GlobalConfig::get_config_path(const std::string &config_name) {
+  auto              config = instance();
+  const std::string directory =
+      config->param<std::string>("global", "config_path", ".");
+  const std::string filename =
+      config->param<std::string>("global", config_name, config_name + ".json");
   return directory + "/" + filename;
 }
 
-void GlobalConfig::dump(const std::string& path) {
-  spdlog::debug("dumping config to {} (config_path={})", path, param<std::string>("global", "config_path", "."));
+void GlobalConfig::dump(const std::string &path) {
+  spdlog::debug("dumping config to {} (config_path={})", path,
+                param<std::string>("global", "config_path", "."));
   boost::filesystem::create_directories(path);
   this->save(path + "/config.json");
 
-  const auto& json = std::any_cast<const nlohmann::json&>(config);
-  for (const auto& param : json["global"].items()) {
+  const auto &json = std::any_cast<const nlohmann::json &>(config);
+  for (const auto &param : json["global"].items()) {
     const std::string config_name = param.key();
     const std::string config_file = param.value();
     if (config_name == "config_path" || config_name == "config_ext") {
@@ -91,4 +95,4 @@ void GlobalConfig::dump(const std::string& path) {
   spdlog::debug("dumping global config done");
 }
 
-}  // namespace glim
+} // namespace glim

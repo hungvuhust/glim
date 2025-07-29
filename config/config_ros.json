@@ -70,7 +70,7 @@
     ],
     // Topics
     "imu_topic": "/os_cloud_node/imu",
-    "points_topic": "/os_cloud_node/points",
+    "points_topic": "/lidar1_points",
     "image_topic": "/image",
     // QoS options
     "imu_qos": {

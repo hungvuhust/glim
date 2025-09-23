@@ -1,11 +1,11 @@
 #pragma once
 
-#include <deque>
-#include <vector>
-#include <mutex>
 #include <atomic>
-#include <optional>
 #include <condition_variable>
+#include <deque>
+#include <mutex>
+#include <optional>
+#include <vector>
 
 namespace glim {
 
@@ -15,7 +15,7 @@ namespace glim {
 struct DataStorePolicy {
 public:
   template <typename T, typename Alloc>
-  void regulate(std::deque<T, Alloc>& queue) const {
+  void regulate(std::deque<T, Alloc> &queue) const {
     if (queue.size() < max_size) {
       return;
     }
@@ -29,17 +29,21 @@ public:
   }
 
   static DataStorePolicy UNLIMITED() { return DataStorePolicy(); }
-  static DataStorePolicy UPTO(const size_t max_size, const bool pop_front = true) { return DataStorePolicy{max_size, pop_front}; }
+  static DataStorePolicy UPTO(const size_t max_size,
+                              const bool   pop_front = true) {
+    return DataStorePolicy{max_size, pop_front};
+  }
 
 public:
-  const size_t max_size = std::numeric_limits<size_t>::max();
-  const bool pop_front = true;
+  const size_t max_size  = std::numeric_limits<size_t>::max();
+  const bool   pop_front = true;
 };
 
 /**
  * @brief Simple thread-safe vector with mutex-lock.
- * @note  This class is performant in the single-thread-input single-thread-output situation.
- *        In the multi-thread-input multi-thread-output situation, consider using concurrent containers in TBB.
+ * @note  This class is performant in the single-thread-input
+ * single-thread-output situation. In the multi-thread-input multi-thread-output
+ * situation, consider using concurrent containers in TBB.
  *
  * @tparam T      Data type
  * @tparam Alloc  Allocator
@@ -47,7 +51,10 @@ public:
 template <typename T, typename Alloc = std::allocator<T>>
 class ConcurrentVector {
 public:
-  ConcurrentVector(const DataStorePolicy& policy = DataStorePolicy::UNLIMITED()) : policy(policy) { end_of_data = false; }
+  ConcurrentVector(const DataStorePolicy &policy = DataStorePolicy::UNLIMITED())
+      : policy(policy) {
+    end_of_data = false;
+  }
 
   void submit_end_of_data() {
     end_of_data = true;
@@ -69,7 +76,7 @@ public:
     values.reserve(n);
   }
 
-  void push_back(const T& value) {
+  void push_back(const T &value) {
     std::lock_guard<std::mutex> lock(mutex);
     values.push_back(value);
     policy.regulate(values);
@@ -95,8 +102,7 @@ public:
    * @brief Insert new_values at the end of the container
    * @param new_values  Values to be inserted
    */
-  template <typename Container>
-  void insert(const Container& new_values) {
+  template <typename Container> void insert(const Container &new_values) {
     if (new_values.empty()) {
       return;
     }
@@ -124,7 +130,8 @@ public:
 
   /**
    * @brief Get the first element in the queue.
-   *        If the queue is empty, this method waits until a new data arrives or EOD is submitted.
+   *        If the queue is empty, this method waits until a new data arrives or
+   * EOD is submitted.
    * @return  nullopt if the queue is empty and EOD is submitted.
    */
   std::optional<T> pop_wait() {
@@ -146,7 +153,8 @@ public:
 
   /**
    * @brief Get all the data and clear the container.
-   *        If the queue is empty, this method waits until a new data arrives or EOD is submitted.
+   *        If the queue is empty, this method waits until a new data arrives or
+   * EOD is submitted.
    * @return std::vector<T, Alloc>   All data or empty if EOD is submitted.
    */
   std::vector<T, Alloc> get_all_and_clear_wait() {
@@ -171,7 +179,7 @@ public:
    * @return std::vector<T, Alloc>   All data
    */
   std::vector<T, Alloc> get_all_and_clear() {
-    std::vector<T, Alloc> buffer;
+    std::vector<T, Alloc>       buffer;
     std::lock_guard<std::mutex> lock(mutex);
     buffer.assign(values.begin(), values.end());
     values.clear();
@@ -185,7 +193,7 @@ public:
    * @return std::vector<T, Alloc>  Up to num_max data
    */
   std::vector<T, Alloc> get_and_clear(int num_max) {
-    std::vector<T, Alloc> buffer;
+    std::vector<T, Alloc>       buffer;
     std::lock_guard<std::mutex> lock(mutex);
     if (values.size() <= num_max) {
       buffer.assign(values.begin(), values.end());
@@ -201,11 +209,11 @@ public:
 private:
   const DataStorePolicy policy;
 
-  std::atomic_bool end_of_data;
+  std::atomic_bool        end_of_data;
   std::condition_variable cond;
 
-  mutable std::mutex mutex;
+  mutable std::mutex   mutex;
   std::deque<T, Alloc> values;
 };
 
-}  // namespace  glim
+} // namespace  glim

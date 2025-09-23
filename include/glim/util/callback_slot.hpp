@@ -1,14 +1,13 @@
 #pragma once
 
-#include <vector>
 #include <algorithm>
 #include <functional>
+#include <vector>
 
 /**
  * @brief Callback slot to hold and trigger multiple callbacks
  */
-template <typename Func>
-class CallbackSlot {
+template <typename Func> class CallbackSlot {
 public:
   CallbackSlot() {}
   ~CallbackSlot() {}
@@ -18,7 +17,7 @@ public:
    * @param callback    Callback to be registered
    * @return int        Callback ID
    */
-  int add(const std::function<Func>& callback) {
+  int add(const std::function<Func> &callback) {
     callbacks.push_back(callback);
     return callbacks.size() - 1;
   }
@@ -35,20 +34,21 @@ public:
    * @return false  No valid callbacks
    */
   operator bool() const {
-    return !callbacks.empty() && std::any_of(callbacks.begin(), callbacks.end(), [](const std::function<Func>& f) { return f; });
+    return !callbacks.empty() &&
+           std::any_of(callbacks.begin(), callbacks.end(),
+                       [](const std::function<Func> &f) { return f; });
   }
 
   /**
    * @brief Call all the registered callbacks
    * @param args  Arguments for the callbacks
    */
-  template <class... Args>
-  void call(Args&&... args) const {
+  template <class... Args> void call(Args &&...args) const {
     if (callbacks.empty()) {
       return;
     }
 
-    for (const auto& callback : callbacks) {
+    for (const auto &callback : callbacks) {
       if (callback) {
         callback(args...);
       }
@@ -59,8 +59,7 @@ public:
    * @brief Call all the registered callbacks
    * @param args  Arguments for the callbacks
    */
-  template <class... Args>
-  void operator()(Args&&... args) const {
+  template <class... Args> void operator()(Args &&...args) const {
     return call(args...);
   }
 

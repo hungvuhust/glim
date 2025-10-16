@@ -8,6 +8,7 @@
 
 #include <glim/preprocess/preprocessed_frame.hpp>
 #include <glim/odometry/estimation_frame.hpp>
+#include <glim/util/load_module.hpp>
 
 namespace glim {
 
@@ -77,6 +78,12 @@ public:
    */
   virtual std::vector<EstimationFrame::ConstPtr> get_remaining_frames() {
     return std::vector<EstimationFrame::ConstPtr>();
+  }
+
+  static std::shared_ptr<LocalizationBase> load_module(
+    const std::string& module_name) {
+    return load_module_from_so<LocalizationBase>(module_name,
+                                                 "create_localization_module");
   }
 
 protected:

@@ -96,6 +96,7 @@ add_library(glim SHARED
   src/glim/mapping/global_mapping.cpp
   src/glim/mapping/global_mapping_pose_graph.cpp
   # localization
+  src/glim/localization/async_localization.cpp
   src/glim/localization/localization_params.cpp
   src/glim/localization/localization_frame.cpp
   src/glim/localization/map_manager.cpp

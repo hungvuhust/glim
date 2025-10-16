@@ -76,6 +76,15 @@ public:
                          double             voxel_resolution = 0.5);
 
   /**
+   * @brief Load map from PLY file
+   * @param ply_file_path Path to PLY file
+   * @param voxel_resolution Voxel resolution for map representation
+   * @return True if loaded successfully
+   */
+  bool load_map_from_ply(const std::string& ply_file_path,
+                         double             voxel_resolution = 0.5);
+
+  /**
    * @brief Load map from GLIM submaps
    * @param submap_directory Directory containing submap files
    * @param voxel_resolution Voxel resolution for map representation

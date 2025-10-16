@@ -1,5 +1,6 @@
 #include <glim/localization/map_manager.hpp>
 #include <pcl/io/pcd_io.h>
+#include <pcl/io/ply_io.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/common/transforms.h>
@@ -53,6 +54,64 @@ bool MapManager::load_map_from_pcd(const std::string& pcd_path,
   // Create global map
   global_map_           = std::make_shared<GlobalMap>();
   global_map_->map_name = std::filesystem::path(pcd_path).stem().string();
+  global_map_->voxel_resolution = voxel_resolution;
+  global_map_->total_points     = cloud->size();
+
+  // Create iVox map
+  global_map_->global_ivox =
+    std::make_shared<gtsam_points::iVox>(voxel_resolution);
+  global_map_->global_ivox->insert(*glim_cloud);
+
+  // Store original point cloud
+  global_map_->global_point_cloud = glim_cloud;
+
+  // Compute map bounds
+  compute_map_bounds();
+
+  logger->info("Map loaded successfully: {} points, {} voxels",
+               cloud->size(),
+               global_map_->global_ivox->num_voxels());
+
+  return validate_map_data();
+}
+
+bool MapManager::load_map_from_ply(const std::string& ply_path,
+                                   double             voxel_resolution) {
+  auto logger = spdlog::get("glim_logger");
+  if (!logger)
+    logger = spdlog::default_logger();
+
+  logger->info("Loading map from PLY file: {}", ply_path);
+
+  if (!std::filesystem::exists(ply_path)) {
+    logger->error("PLY file not found: {}", ply_path);
+    return false;
+  }
+
+  // Load PLY file
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+  if (pcl::io::loadPLYFile<pcl::PointXYZ>(ply_path, *cloud) == -1) {
+    logger->error("Failed to load PLY file: {}", ply_path);
+    return false;
+  }
+
+  logger->info("Loaded {} points from PLY file", cloud->size());
+
+  // Convert to GLIM point cloud format
+  std::vector<Eigen::Vector4d> points_vec;
+  points_vec.reserve(cloud->size());
+  for (size_t i = 0; i < cloud->size(); ++i) {
+    points_vec.emplace_back(cloud->points[i].x,
+                            cloud->points[i].y,
+                            cloud->points[i].z,
+                            1.0);
+  }
+
+  auto glim_cloud = std::make_shared<gtsam_points::PointCloudCPU>(points_vec);
+
+  // Create global map
+  global_map_           = std::make_shared<GlobalMap>();
+  global_map_->map_name = std::filesystem::path(ply_path).stem().string();
   global_map_->voxel_resolution = voxel_resolution;
   global_map_->total_points     = cloud->size();
 

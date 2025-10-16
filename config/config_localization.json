@@ -1,0 +1,24 @@
+{
+    "localization": {
+        "so_name": "liblocalization_cpu.so",
+        "num_threads": 4,
+        "scan_to_map_threshold": 0.7,
+        "scan_to_scan_threshold": 0.5,
+        "max_correspondence_distance": 1.0,
+        "min_correspondences": 100,
+        "w_overlap": 0.4,
+        "w_residual": 0.3,
+        "w_consistency": 0.2,
+        "w_geometric": 0.1,
+        "regularization_weight": 1.0,
+        "smoother_lag": 5.0,
+        "isam2_relinearize_threshold": 0.1,
+        "isam2_relinearize_skip": 1,
+        "use_isam2_dogleg": false,
+        "ivox_resolution": 0.5,
+        "ivox_min_dist": 0.1,
+        "ivox_lru_thresh": 200,
+        "keyframe_distance_threshold": 2.0,
+        "keyframe_angle_threshold": 0.5
+    }
+}

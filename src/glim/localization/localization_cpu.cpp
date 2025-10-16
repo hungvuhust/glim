@@ -157,6 +157,10 @@ bool LocalizationCPU::load_global_map(const std::string& map_path) {
   if (map_path.size() >= 4 && map_path.substr(map_path.size() - 4) == ".pcd") {
     success =
       map_manager_->load_map_from_pcd(map_path, params_.ivox_resolution);
+  } else if (map_path.size() >= 4 &&
+             map_path.substr(map_path.size() - 4) == ".ply") {
+    success =
+      map_manager_->load_map_from_ply(map_path, params_.ivox_resolution);
   } else {
     success =
       map_manager_->load_map_from_submaps(map_path, params_.ivox_resolution);
@@ -269,15 +273,16 @@ MatchingResult LocalizationCPU::perform_scan_to_scan_matching(
     std::make_shared<gtsam_points::PointCloudCPU>(current_frame->points);
   gtsam_points::PointCloud::ConstPtr current_cloud_base = current_cloud;
 
-  // Create GICP factor with target iVox (unary factor with fixed target at identity)
+  // Create GICP factor with target iVox (unary factor with fixed target at
+  // identity)
   auto gicp_factor = gtsam::make_shared<
     gtsam_points::IntegratedGICPFactor_<gtsam_points::iVox,
                                         gtsam_points::PointCloud>>(
-    gtsam::Pose3(),           // Fixed target pose at identity
-    gtsam::Symbol('x', 0),    // Source key (to be optimized)
-    target_ivox_,             // Target iVox
-    current_cloud_base,       // Source point cloud
-    target_ivox_);            // Target tree for nearest neighbor search
+    gtsam::Pose3(),         // Fixed target pose at identity
+    gtsam::Symbol('x', 0),  // Source key (to be optimized)
+    target_ivox_,           // Target iVox
+    current_cloud_base,     // Source point cloud
+    target_ivox_);          // Target tree for nearest neighbor search
 
   gtsam::Values     values;
   Eigen::Isometry3d relative_pose =
@@ -363,11 +368,11 @@ MatchingResult LocalizationCPU::perform_scan_to_map_matching(
   auto map_factor = gtsam::make_shared<
     gtsam_points::IntegratedGICPFactor_<gtsam_points::iVox,
                                         gtsam_points::PointCloud>>(
-    gtsam::Pose3(),                // Fixed target pose at identity
-    gtsam::Symbol('x', 0),         // Source key (to be optimized)
-    global_map->global_ivox,       // Target iVox (global map)
-    current_cloud_base,            // Source point cloud (current scan)
-    global_map->global_ivox);      // Target tree for nearest neighbor search
+    gtsam::Pose3(),            // Fixed target pose at identity
+    gtsam::Symbol('x', 0),     // Source key (to be optimized)
+    global_map->global_ivox,   // Target iVox (global map)
+    current_cloud_base,        // Source point cloud (current scan)
+    global_map->global_ivox);  // Target tree for nearest neighbor search
 
   gtsam::Values values;
   // Add source pose (to be optimized)

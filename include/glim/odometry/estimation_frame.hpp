@@ -23,6 +23,8 @@ struct EstimationFrame {
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
+  virtual ~EstimationFrame() = default;
+
   /**
    * @brief Make a clone of the estimation frame. (Points data are shallow
    * copied)
@@ -56,7 +58,8 @@ struct EstimationFrame {
    * @param key  Key of the custom data
    * @return T*  Pointer to the custom data. nullptr if not found.
    */
-  template <typename T> T *get_custom_data(const std::string &key) {
+  template <typename T>
+  T *get_custom_data(const std::string &key) {
     const auto found = custom_data.find(key);
     if (found == custom_data.end()) {
       return nullptr;
@@ -70,7 +73,8 @@ struct EstimationFrame {
    * @param key  Key of the custom data
    * @return T*  Pointer to the custom data. nullptr if not found.
    */
-  template <typename T> const T *get_custom_data(const std::string &key) const {
+  template <typename T>
+  const T *get_custom_data(const std::string &key) const {
     const auto found = custom_data.find(key);
     if (found == custom_data.end()) {
       return nullptr;
@@ -79,29 +83,29 @@ struct EstimationFrame {
   }
 
 public:
-  long   id;    ///< Frame ID
-  double stamp; ///< Timestamp
+  long   id;     ///< Frame ID
+  double stamp;  ///< Timestamp
 
-  Eigen::Isometry3d T_lidar_imu;   ///< LiDAR-IMU transformation
-  Eigen::Isometry3d T_world_lidar; ///< LiDAR pose in the world space
-  Eigen::Isometry3d T_world_imu;   ///< IMU pose in the world space
+  Eigen::Isometry3d T_lidar_imu;    ///< LiDAR-IMU transformation
+  Eigen::Isometry3d T_world_lidar;  ///< LiDAR pose in the world space
+  Eigen::Isometry3d T_world_imu;    ///< IMU pose in the world space
 
-  Eigen::Vector3d             v_world_imu; ///< IMU velocity in the world frame
-  Eigen::Matrix<double, 6, 1> imu_bias;    ///< IMU bias
+  Eigen::Vector3d             v_world_imu;  ///< IMU velocity in the world frame
+  Eigen::Matrix<double, 6, 1> imu_bias;     ///< IMU bias
 
   PreprocessedFrame::ConstPtr
-      raw_frame; ///< Raw input point cloud (LiDAR frame)
+    raw_frame;  ///< Raw input point cloud (LiDAR frame)
   Eigen::Matrix<double, 8, -1>
-      imu_rate_trajectory; ///< IMU-rate trajectory 8 x N  [t, x, y, z, qx, qy,
-                           ///< qz, qw]
+    imu_rate_trajectory;  ///< IMU-rate trajectory 8 x N  [t, x, y, z, qx, qy,
+                          ///< qz, qw]
 
-  FrameID frame_id; ///< Coordinate frame of $frame
+  FrameID frame_id;  ///< Coordinate frame of $frame
   gtsam_points::PointCloud::ConstPtr
-      frame; ///< Deskewed points for state estimation
+    frame;  ///< Deskewed points for state estimation
   std::vector<gtsam_points::GaussianVoxelMap::Ptr>
-      voxelmaps; ///< Multi-resolution voxelmaps
+    voxelmaps;  ///< Multi-resolution voxelmaps
 
   std::unordered_map<std::string, std::shared_ptr<void>>
-      custom_data; ///< User-defined custom data
+    custom_data;  ///< User-defined custom data
 };
-} // namespace glim
+}  // namespace glim

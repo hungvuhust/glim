@@ -15,9 +15,12 @@
 
 namespace glim {
 
-OfflineViewer::OfflineViewer(const std::string& init_map_path) : init_map_path(init_map_path) {}
+OfflineViewer::OfflineViewer(const std::string& init_map_path)
+  : init_map_path(init_map_path) {
+}
 
-OfflineViewer::~OfflineViewer() {}
+OfflineViewer::~OfflineViewer() {
+}
 
 void OfflineViewer::setup_ui() {
   auto viewer = guik::LightViewer::instance();
@@ -26,19 +29,21 @@ void OfflineViewer::setup_ui() {
   progress_modal.reset(new guik::ProgressModal("offline_viewer_progress"));
 
 #ifdef GTSAM_POINTS_USE_CUDA
-  gtsam_points::LinearizationHook::register_hook([] { return gtsam_points::create_nonlinear_factor_set_gpu(); });
+  gtsam_points::LinearizationHook::register_hook(
+    [] { return gtsam_points::create_nonlinear_factor_set_gpu(); });
 #endif
 }
 
 void OfflineViewer::main_menu() {
-  bool start_open_map = false || !init_map_path.empty();
-  bool start_close_map = false;
-  bool start_save_map = false;
+  bool start_open_map   = false || !init_map_path.empty();
+  bool start_close_map  = false;
+  bool start_save_map   = false;
   bool start_export_map = false;
 
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("File")) {
-      if (!async_global_mapping) {  // if a previously loaded map does not yet exist
+      if (!async_global_mapping) {  // if a previously loaded map does not yet
+                                    // exist
         if (ImGui::MenuItem("Open New Map")) {
           start_open_map = true;
         }
@@ -49,7 +54,8 @@ void OfflineViewer::main_menu() {
       }
 
       if (ImGui::MenuItem("Close Map")) {
-        if (pfd::message("Warning", "Close the map?").result() == pfd::button::ok) {
+        if (pfd::message("Warning", "Close the map?").result() ==
+            pfd::button::ok) {
           start_close_map = true;
         }
       }
@@ -85,7 +91,9 @@ void OfflineViewer::main_menu() {
 
     guik::RecentFiles recent_files("offline_viewer_open");
     if (init_map_path.empty()) {
-      map_path = pfd::select_folder("Select a dump directory", recent_files.most_recent()).result();
+      map_path = pfd::select_folder("Select a dump directory",
+                                    recent_files.most_recent())
+                   .result();
     } else {
       map_path = init_map_path;
       init_map_path.clear();
@@ -103,9 +111,13 @@ void OfflineViewer::main_menu() {
       }
 
       const Config config_ros(GlobalConfig::get_config_path("config_ros"));
-      const std::vector<std::string> ext_module_names = config_ros.param<std::vector<std::string>>("glim_ros", "extension_modules", {});
+      const std::vector<std::string> ext_module_names =
+        config_ros.param<std::vector<std::string>>("glim_ros",
+                                                   "extension_modules",
+                                                   {});
       for (const auto& name : ext_module_names) {
-        if (name.find("viewer") != std::string::npos || name.find("monitor") != std::string::npos) {
+        if (name.find("viewer") != std::string::npos ||
+            name.find("monitor") != std::string::npos) {
           continue;
         }
         if (imported_shared_libs.count(name)) {
@@ -121,21 +133,28 @@ void OfflineViewer::main_menu() {
       // if a map is already loaded, use existing map to load new map into
       std::shared_ptr<GlobalMapping> global_mapping;
       if (async_global_mapping) {
-        logger->info("global map already exists, loading new map into existing global map");
-        global_mapping = std::dynamic_pointer_cast<GlobalMapping>(async_global_mapping->get_global_mapping());
+        logger->info(
+          "global map already exists, loading new map into existing global "
+          "map");
+        global_mapping = std::dynamic_pointer_cast<GlobalMapping>(
+          async_global_mapping->get_global_mapping());
       }
 
-      progress_modal->open<std::shared_ptr<GlobalMapping>>("open", [this, map_path, global_mapping](guik::ProgressInterface& progress) {
-        return load_map(progress, map_path, global_mapping);
-      });
+      progress_modal->open<std::shared_ptr<GlobalMapping>>(
+        "open",
+        [this, map_path, global_mapping](guik::ProgressInterface& progress) {
+          return load_map(progress, map_path, global_mapping);
+        });
     }
   }
-  auto open_result = progress_modal->run<std::shared_ptr<GlobalMapping>>("open");
+  auto open_result =
+    progress_modal->run<std::shared_ptr<GlobalMapping>>("open");
   if (open_result) {
     if (!(*open_result)) {
       pfd::message("Error", "Failed to load map").result();
     } else {
-      async_global_mapping.reset(new glim::AsyncGlobalMapping(*open_result, 1e6));
+      async_global_mapping.reset(
+        new glim::AsyncGlobalMapping(*open_result, 1e6));
     }
   }
 
@@ -145,10 +164,17 @@ void OfflineViewer::main_menu() {
       logger->warn("No map data to save");
     } else {
       guik::RecentFiles recent_files("offline_viewer_save");
-      const std::string path = pfd::select_folder("Select a directory to save the map", recent_files.most_recent()).result();
+      const std::string path =
+        pfd::select_folder("Select a directory to save the map",
+                           recent_files.most_recent())
+          .result();
       if (!path.empty()) {
         recent_files.push(path);
-        progress_modal->open<bool>("save", [this, path](guik::ProgressInterface& progress) { return save_map(progress, path); });
+        progress_modal->open<bool>("save",
+                                   [this,
+                                    path](guik::ProgressInterface& progress) {
+                                     return save_map(progress, path);
+                                   });
       }
     }
   }
@@ -157,10 +183,17 @@ void OfflineViewer::main_menu() {
   // export map
   if (start_export_map) {
     guik::RecentFiles recent_files("offline_viewer_export");
-    const std::string path = pfd::save_file("Select the file destination", recent_files.most_recent(), {"PLY", "*.ply"}).result();
+    const std::string path = pfd::save_file("Select the file destination",
+                                            recent_files.most_recent(),
+                                            {"PLY", "*.ply"})
+                               .result();
     if (!path.empty()) {
       recent_files.push(path);
-      progress_modal->open<bool>("export", [this, path](guik::ProgressInterface& progress) { return export_map(progress, path); });
+      progress_modal->open<bool>("export",
+                                 [this,
+                                  path](guik::ProgressInterface& progress) {
+                                   return export_map(progress, path);
+                                 });
     }
   }
   auto export_result = progress_modal->run<bool>("export");
@@ -178,18 +211,24 @@ void OfflineViewer::main_menu() {
   }
 }
 
-std::shared_ptr<glim::GlobalMapping> OfflineViewer::load_map(guik::ProgressInterface& progress, const std::string& path, std::shared_ptr<GlobalMapping> global_mapping) {
+std::shared_ptr<glim::GlobalMapping> OfflineViewer::load_map(
+  guik::ProgressInterface&       progress,
+  const std::string&             path,
+  std::shared_ptr<GlobalMapping> global_mapping) {
   progress.set_title("Load map");
   progress.set_text("Now loading");
   progress.set_maximum(1);
 
-  if (global_mapping == nullptr) {  // if no map is loaded yet initialize new GlobalMapping
+  if (global_mapping ==
+      nullptr) {  // if no map is loaded yet initialize new GlobalMapping
     glim::GlobalMappingParams params;
-    params.isam2_relinearize_skip = 1;
+    params.isam2_relinearize_skip   = 1;
     params.isam2_relinearize_thresh = 0.0;
 
-    const auto result = pfd::message("Confirm", "Do optimization?", pfd::choice::yes_no).result();
-    params.enable_optimization = (result == pfd::button::ok) || (result == pfd::button::yes);
+    const auto result =
+      pfd::message("Confirm", "Do optimization?", pfd::choice::yes_no).result();
+    params.enable_optimization =
+      (result == pfd::button::ok) || (result == pfd::button::yes);
 
     logger->info("enable_optimization={}", params.enable_optimization);
     global_mapping.reset(new glim::GlobalMapping(params));
@@ -203,14 +242,16 @@ std::shared_ptr<glim::GlobalMapping> OfflineViewer::load_map(guik::ProgressInter
   return global_mapping;
 }
 
-bool OfflineViewer::save_map(guik::ProgressInterface& progress, const std::string& path) {
+bool OfflineViewer::save_map(guik::ProgressInterface& progress,
+                             const std::string&       path) {
   progress.set_title("Save map");
   progress.set_text("Now saving");
   async_global_mapping->save(path);
   return true;
 }
 
-bool OfflineViewer::export_map(guik::ProgressInterface& progress, const std::string& path) {
+bool OfflineViewer::export_map(guik::ProgressInterface& progress,
+                               const std::string&       path) {
   progress.set_title("Export points");
   progress.set_text("Concatenating submaps");
   progress.set_maximum(3);

@@ -22,15 +22,18 @@ private:
 
   void main_menu();
 
-  std::shared_ptr<GlobalMapping> load_map(guik::ProgressInterface& progress, const std::string& path, std::shared_ptr<GlobalMapping> global_mapping);
+  std::shared_ptr<GlobalMapping> load_map(
+    guik::ProgressInterface&       progress,
+    const std::string&             path,
+    std::shared_ptr<GlobalMapping> global_mapping);
   bool save_map(guik::ProgressInterface& progress, const std::string& path);
   bool export_map(guik::ProgressInterface& progress, const std::string& path);
 
 private:
-  std::string init_map_path;
+  std::string                          init_map_path;
   std::unique_ptr<guik::ProgressModal> progress_modal;
 
-  std::unordered_set<std::string> imported_shared_libs;
+  std::unordered_set<std::string>     imported_shared_libs;
   std::unique_ptr<AsyncGlobalMapping> async_global_mapping;
 };
 

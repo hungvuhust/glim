@@ -1,0 +1,94 @@
+{
+    /*** CPU-based Localization Configuration ***
+  // --- Matching Strategy ---
+  // scan_to_map_threshold       : Minimum score for scan-to-map matching [0.0-1.0]
+  // scan_to_scan_threshold      : Minimum score for scan-to-scan matching [0.0-1.0]
+  // max_correspondence_distance : Maximum distance for point correspondences [m]
+  // min_correspondences         : Minimum number of correspondences required
+  //
+  // --- Quality Evaluation Weights ---
+  // w_overlap                   : Weight for overlap ratio in quality evaluation
+  // w_residual                  : Weight for residual score in quality evaluation
+  // w_consistency               : Weight for temporal consistency in quality evaluation
+  // w_geometric                 : Weight for geometric consistency in quality evaluation
+  //
+  // --- Registration Parameters ---
+  // registration_type           : Registration algorithm "GICP" or "VGICP"
+  // max_iterations              : Maximum LM optimization iterations
+  // convergence_threshold       : Convergence threshold for optimization
+  //
+  // --- iVox Parameters (for scan-to-scan) ---
+  // ivox_resolution             : iVox voxel resolution [m]
+  // ivox_min_dist               : Minimum distance between points in voxel [m]
+  // ivox_lru_thresh             : LRU cache threshold for memory management
+  //
+  // --- Fixed-lag Smoother Parameters ---
+  // smoother_lag                : Fixed-lag smoother window size [sec]
+  // isam2_relinearize_threshold : ISAM2 relinearization threshold
+  // isam2_relinearize_skip      : ISAM2 relinearization skip count
+  // use_isam2_dogleg            : Use dogleg optimizer (slower but more robust)
+  //
+  // --- Keyframe Management ---
+  // keyframe_distance_threshold : Distance threshold for keyframe insertion [m]
+  // keyframe_angle_threshold    : Angle threshold for keyframe insertion [rad]
+  // max_keyframes               : Maximum number of keyframes to maintain
+  //
+  // --- Adaptive Noise Modeling ---
+  // min_translation_noise       : Minimum translation noise for high confidence [m]
+  // max_translation_noise       : Maximum translation noise for low confidence [m]
+  // min_rotation_noise          : Minimum rotation noise for high confidence [rad]
+  // max_rotation_noise          : Maximum rotation noise for low confidence [rad]
+  //
+  // --- Map Parameters ---
+  // map_voxel_resolution        : Voxel resolution for global map representation [m]
+  // initial_pose_uncertainty    : Initial pose uncertainty for initialization [m]
+  // initialization_frames       : Number of frames required for initialization
+  //
+  // --- Threading ---
+  // num_threads                 : Number of threads for parallel processing
+  */
+    "localization": {
+        "so_name": "liblocalization_cpu.so",
+        // Matching strategy parameters
+        "scan_to_map_threshold": 0.7,
+        "scan_to_scan_threshold": 0.5,
+        "max_correspondence_distance": 1.0,
+        "min_correspondences": 100,
+        // Quality evaluation weights
+        "w_overlap": 0.4,
+        "w_residual": 0.3,
+        "w_consistency": 0.2,
+        "w_geometric": 0.1,
+        // Registration parameters
+        "registration_type": "GICP",
+        "max_iterations": 10,
+        "convergence_threshold": 1e-3,
+        // iVox parameters for scan-to-scan
+        "ivox_resolution": 0.5,
+        "ivox_min_dist": 0.1,
+        "ivox_lru_thresh": 200,
+        // Fixed-lag smoother parameters
+        "smoother_lag": 5.0,
+        "isam2_relinearize_threshold": 0.1,
+        "isam2_relinearize_skip": 1,
+        "use_isam2_dogleg": false,
+        // Graph optimization
+        "regularization_weight": 1.0,
+        "sliding_window_size": 50,
+        // Keyframe management
+        "keyframe_distance_threshold": 2.0,
+        "keyframe_angle_threshold": 0.5,
+        "max_keyframes": 100,
+        // Adaptive noise modeling
+        "min_translation_noise": 0.01,
+        "max_translation_noise": 0.5,
+        "min_rotation_noise": 0.001,
+        "max_rotation_noise": 0.1,
+        // Map parameters
+        "map_voxel_resolution": 0.5,
+        "initial_pose_uncertainty": 1.0,
+        "initialization_frames": 5,
+        // Threading
+        "num_threads": 4
+    }
+}

@@ -8,7 +8,7 @@ namespace glim {
 /// @brief A cell to store submap point indices for quick indexing.
 struct MapCell {
 public:
-  using Ptr = std::shared_ptr<MapCell>;
+  using Ptr      = std::shared_ptr<MapCell>;
   using ConstPtr = std::shared_ptr<const MapCell>;
 
   MapCell(double resolution, const Eigen::Vector3i& coord);
@@ -24,8 +24,8 @@ public:
   void remove_submaps(const std::vector<int>& submap_ids);
 
 public:
-  const double resolution;      // Cell resolution [m]
-  const Eigen::Vector3i coord;  // Cell coordinates in the map frame
+  const double          resolution;  // Cell resolution [m]
+  const Eigen::Vector3i coord;       // Cell coordinates in the map frame
 
   std::vector<std::uint64_t> point_ids;  // (submap_id << 32bit) | point_id
 };

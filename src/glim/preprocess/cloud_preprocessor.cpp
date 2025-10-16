@@ -24,47 +24,53 @@ CloudPreprocessorParams::CloudPreprocessorParams() {
   Config sensor_config(GlobalConfig::get_config_path("config_sensors"));
 
   global_shutter =
-      sensor_config.param<bool>("sensors", "global_shutter_lidar", false);
+    sensor_config.param<bool>("sensors", "global_shutter_lidar", false);
 
   distance_near_thresh =
-      config.param<double>("preprocess", "distance_near_thresh", 1.0);
+    config.param<double>("preprocess", "distance_near_thresh", 1.0);
   distance_far_thresh =
-      config.param<double>("preprocess", "distance_far_thresh", 100.0);
+    config.param<double>("preprocess", "distance_far_thresh", 100.0);
   use_random_grid_downsampling =
-      config.param<bool>("preprocess", "use_random_grid_downsampling", false);
+    config.param<bool>("preprocess", "use_random_grid_downsampling", false);
   downsample_resolution =
-      config.param<double>("preprocess", "downsample_resolution", 0.15);
+    config.param<double>("preprocess", "downsample_resolution", 0.15);
   downsample_target =
-      config.param<int>("preprocess", "random_downsample_target", 0);
+    config.param<int>("preprocess", "random_downsample_target", 0);
   downsample_rate =
-      config.param<double>("preprocess", "random_downsample_rate", 0.3);
+    config.param<double>("preprocess", "random_downsample_rate", 0.3);
   enable_outlier_removal =
-      config.param<bool>("preprocess", "enable_outlier_removal", false);
+    config.param<bool>("preprocess", "enable_outlier_removal", false);
   outlier_removal_k = config.param<int>("preprocess", "outlier_removal_k", 10);
   outlier_std_mul_factor =
-      config.param<double>("preprocess", "outlier_std_mul_factor", 2.0);
+    config.param<double>("preprocess", "outlier_std_mul_factor", 2.0);
 
   enable_cropbox_filter =
-      config.param<bool>("preprocess", "enable_cropbox_filter", false);
+    config.param<bool>("preprocess", "enable_cropbox_filter", false);
   crop_bbox_frame = "lidar";
   crop_bbox_min.setZero();
   crop_bbox_max.setZero();
 
   if (enable_cropbox_filter) {
-    Eigen::Isometry3d T_lidar_imu = sensor_config.param<Eigen::Isometry3d>(
-        "sensors", "T_lidar_imu", Eigen::Isometry3d::Identity());
+    Eigen::Isometry3d T_lidar_imu =
+      sensor_config.param<Eigen::Isometry3d>("sensors",
+                                             "T_lidar_imu",
+                                             Eigen::Isometry3d::Identity());
     T_imu_lidar = T_lidar_imu.inverse();
 
     crop_bbox_frame =
-        config.param<std::string>("preprocess", "crop_bbox_frame", "lidar");
-    crop_bbox_min = config.param<Eigen::Vector3d>(
-        "preprocess", "crop_bbox_min", Eigen::Vector3d(0.0, 0.0, 0.0));
-    crop_bbox_max = config.param<Eigen::Vector3d>(
-        "preprocess", "crop_bbox_max", Eigen::Vector3d(0.0, 0.0, 0.0));
+      config.param<std::string>("preprocess", "crop_bbox_frame", "lidar");
+    crop_bbox_min =
+      config.param<Eigen::Vector3d>("preprocess",
+                                    "crop_bbox_min",
+                                    Eigen::Vector3d(0.0, 0.0, 0.0));
+    crop_bbox_max =
+      config.param<Eigen::Vector3d>("preprocess",
+                                    "crop_bbox_max",
+                                    Eigen::Vector3d(0.0, 0.0, 0.0));
 
     if (crop_bbox_frame != "lidar" && crop_bbox_frame != "imu") {
       throw std::runtime_error(
-          fmt::format("Unsupported crop bbox frame: {}", crop_bbox_frame));
+        fmt::format("Unsupported crop bbox frame: {}", crop_bbox_frame));
     } else if ((crop_bbox_min.array() > crop_bbox_max.array()).any()) {
       throw std::runtime_error(fmt::format("Misconfigured bbox: min={}, max={}",
                                            convert_to_string(crop_bbox_min),
@@ -77,10 +83,11 @@ CloudPreprocessorParams::CloudPreprocessorParams() {
   num_threads = config.param<int>("preprocess", "num_threads", 2);
 }
 
-CloudPreprocessorParams::~CloudPreprocessorParams() {}
+CloudPreprocessorParams::~CloudPreprocessorParams() {
+}
 
 CloudPreprocessor::CloudPreprocessor(const CloudPreprocessorParams &params)
-    : params(params) {
+  : params(params) {
 #ifdef GTSAM_POINTS_USE_TBB
   if (gtsam_points::is_tbb_default()) {
     tbb_task_arena.reset(new tbb::task_arena(params.num_threads));
@@ -88,10 +95,11 @@ CloudPreprocessor::CloudPreprocessor(const CloudPreprocessorParams &params)
 #endif
 }
 
-CloudPreprocessor::~CloudPreprocessor() {}
+CloudPreprocessor::~CloudPreprocessor() {
+}
 
-PreprocessedFrame::Ptr
-CloudPreprocessor::preprocess(const RawPoints::ConstPtr &raw_points) {
+PreprocessedFrame::Ptr CloudPreprocessor::preprocess(
+  const RawPoints::ConstPtr &raw_points) {
   PreprocessCallbacks::on_raw_points_received(raw_points);
   if (gtsam_points::is_omp_default() || params.num_threads == 1 ||
       !tbb_task_arena) {
@@ -109,8 +117,8 @@ CloudPreprocessor::preprocess(const RawPoints::ConstPtr &raw_points) {
   return preprocessed;
 }
 
-PreprocessedFrame::Ptr
-CloudPreprocessor::preprocess_impl(const RawPoints::ConstPtr &raw_points) {
+PreprocessedFrame::Ptr CloudPreprocessor::preprocess_impl(
+  const RawPoints::ConstPtr &raw_points) {
   spdlog::trace("preprocessing input: {} points", raw_points->size());
 
   gtsam_points::PointCloud::Ptr frame(new gtsam_points::PointCloud);
@@ -124,14 +132,15 @@ CloudPreprocessor::preprocess_impl(const RawPoints::ConstPtr &raw_points) {
   // Downsampling
   if (params.use_random_grid_downsampling) {
     const double rate =
-        params.downsample_target > 0
-            ? static_cast<double>(params.downsample_target) / frame->size()
-            : params.downsample_rate;
+      params.downsample_target > 0
+        ? static_cast<double>(params.downsample_target) / frame->size()
+        : params.downsample_rate;
     frame = gtsam_points::randomgrid_sampling(
-        frame, params.downsample_resolution, rate, mt, params.num_threads);
+      frame, params.downsample_resolution, rate, mt, params.num_threads);
   } else {
-    frame = gtsam_points::voxelgrid_sampling(
-        frame, params.downsample_resolution, params.num_threads);
+    frame = gtsam_points::voxelgrid_sampling(frame,
+                                             params.downsample_resolution,
+                                             params.num_threads);
   }
 
   if (frame->size() < 100) {
@@ -143,16 +152,16 @@ CloudPreprocessor::preprocess_impl(const RawPoints::ConstPtr &raw_points) {
   std::vector<int> indices;
   indices.reserve(frame->size());
   double squared_distance_near_thresh =
-      params.distance_near_thresh * params.distance_near_thresh;
+    params.distance_near_thresh * params.distance_near_thresh;
   double squared_distance_far_thresh =
-      params.distance_far_thresh * params.distance_far_thresh;
+    params.distance_far_thresh * params.distance_far_thresh;
 
   for (int i = 0; i < frame->size(); i++) {
     const bool   is_finite = frame->points[i].allFinite();
     const double squared_dist =
-        (Eigen::Vector4d() << frame->points[i].head<3>(), 0.0)
-            .finished()
-            .squaredNorm();
+      (Eigen::Vector4d() << frame->points[i].head<3>(), 0.0)
+        .finished()
+        .squaredNorm();
     if (squared_dist > squared_distance_near_thresh &&
         squared_dist < squared_distance_far_thresh && is_finite) {
       indices.push_back(i);
@@ -198,14 +207,15 @@ CloudPreprocessor::preprocess_impl(const RawPoints::ConstPtr &raw_points) {
       });
 
     } else {
-      throw std::runtime_error(fmt::format("Unsupported crop bbox frame: {}",
-                                           params.crop_bbox_frame));
+      throw std::runtime_error(
+        fmt::format("Unsupported crop bbox frame: {}", params.crop_bbox_frame));
     }
   }
 
   // Outlier removal
   if (params.enable_outlier_removal) {
-    frame = gtsam_points::remove_outliers(frame, params.outlier_removal_k,
+    frame = gtsam_points::remove_outliers(frame,
+                                          params.outlier_removal_k,
                                           params.outlier_std_mul_factor,
                                           params.num_threads);
   }
@@ -214,8 +224,8 @@ CloudPreprocessor::preprocess_impl(const RawPoints::ConstPtr &raw_points) {
   PreprocessedFrame::Ptr preprocessed(new PreprocessedFrame);
   preprocessed->stamp = raw_points->stamp;
   preprocessed->scan_end_time =
-      frame->size() ? raw_points->stamp + frame->times[frame->size() - 1]
-                    : raw_points->stamp;
+    frame->size() ? raw_points->stamp + frame->times[frame->size() - 1]
+                  : raw_points->stamp;
 
   preprocessed->times.assign(frame->times, frame->times + frame->size());
   preprocessed->points.assign(frame->points, frame->points + frame->size());
@@ -226,17 +236,19 @@ CloudPreprocessor::preprocess_impl(const RawPoints::ConstPtr &raw_points) {
 
   preprocessed->k_neighbors = params.k_correspondences;
   preprocessed->neighbors =
-      find_neighbors(frame->points, frame->size(), params.k_correspondences);
+    find_neighbors(frame->points, frame->size(), params.k_correspondences);
 
-  spdlog::trace("preprocessed: {} -> {} points", raw_points->size(),
+  spdlog::trace("preprocessed: {} -> {} points",
+                raw_points->size(),
                 preprocessed->size());
 
   return preprocessed;
 }
 
-std::vector<int>
-CloudPreprocessor::find_neighbors(const Eigen::Vector4d *points,
-                                  const int num_points, const int k) const {
+std::vector<int> CloudPreprocessor::find_neighbors(
+  const Eigen::Vector4d *points,
+  const int              num_points,
+  const int              k) const {
   gtsam_points::KdTree tree(points, num_points);
 
   std::vector<int> neighbors(num_points * k);
@@ -270,4 +282,4 @@ CloudPreprocessor::find_neighbors(const Eigen::Vector4d *points,
   return neighbors;
 }
 
-} // namespace glim
+}  // namespace glim

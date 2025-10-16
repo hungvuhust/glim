@@ -14,7 +14,8 @@ class logger;
 namespace glim {
 
 /**
- * @brief Odometry estimation executor to wrap and asynchronously run OdometryEstimationBase
+ * @brief Odometry estimation executor to wrap and asynchronously run
+ * OdometryEstimationBase
  * @note  All the exposed public methods are thread-safe
  *
  */
@@ -24,7 +25,9 @@ public:
    * @brief Construct a new Async Odometry Estimation object
    * @param odometry_estimation  Odometry estimation to be wrapped
    */
-  AsyncOdometryEstimation(const std::shared_ptr<OdometryEstimationBase>& odometry_estimation, bool enable_imu);
+  AsyncOdometryEstimation(
+    const std::shared_ptr<OdometryEstimationBase>& odometry_estimation,
+    bool                                           enable_imu);
 
   /**
    * @brief Destroy the Async Odometry Estimation object
@@ -46,7 +49,9 @@ public:
    * @param linear_acc    Linear acceleration
    * @param angular_vel   Angular velocity
    */
-  void insert_imu(const double stamp, const Eigen::Vector3d& linear_acc, const Eigen::Vector3d& angular_vel);
+  void insert_imu(const double           stamp,
+                  const Eigen::Vector3d& linear_acc,
+                  const Eigen::Vector3d& angular_vel);
 
   /**
    * @brief Insert a preprocessed point cloud into odometry estimation
@@ -69,29 +74,32 @@ public:
    * @param estimation_results    Estimation results
    * @param marginalized_frames   Marginalized frames
    */
-  void get_results(std::vector<EstimationFrame::ConstPtr>& estimation_results, std::vector<EstimationFrame::ConstPtr>& marginalized_frames);
+  void get_results(std::vector<EstimationFrame::ConstPtr>& estimation_results,
+                   std::vector<EstimationFrame::ConstPtr>& marginalized_frames);
 
 private:
   void run();
 
 private:
-  std::atomic_bool kill_switch;      // Flag to stop the thread immediately (Hard kill switch)
-  std::atomic_bool end_of_sequence;  // Flag to stop the thread when the input queues become empty (Soft kill switch)
-  std::thread thread;
+  std::atomic_bool
+    kill_switch;  // Flag to stop the thread immediately (Hard kill switch)
+  std::atomic_bool end_of_sequence;  // Flag to stop the thread when the input
+                                     // queues become empty (Soft kill switch)
+  std::thread      thread;
 
 // Input queues
 #ifdef GLIM_USE_OPENCV
   ConcurrentVector<std::pair<double, cv::Mat>> input_image_queue;
 #endif
   ConcurrentVector<Eigen::Matrix<double, 7, 1>> input_imu_queue;
-  ConcurrentVector<PreprocessedFrame::Ptr> input_frame_queue;
+  ConcurrentVector<PreprocessedFrame::Ptr>      input_frame_queue;
 
   // Output queues
   ConcurrentVector<EstimationFrame::ConstPtr> output_estimation_results;
   ConcurrentVector<EstimationFrame::ConstPtr> output_marginalized_frames;
 
-  bool enable_imu;
-  std::atomic_int internal_frame_queue_size;
+  bool                                    enable_imu;
+  std::atomic_int                         internal_frame_queue_size;
   std::shared_ptr<OdometryEstimationBase> odometry_estimation;
 
   // Logging

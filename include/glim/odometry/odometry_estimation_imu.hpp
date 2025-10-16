@@ -11,12 +11,12 @@ class Pose3;
 class Values;
 class ImuFactor;
 class NonlinearFactorGraph;
-} // namespace gtsam
+}  // namespace gtsam
 
 namespace gtsam_points {
 class IncrementalFixedLagSmootherExt;
 class IncrementalFixedLagSmootherExtWithFallback;
-} // namespace gtsam_points
+}  // namespace gtsam_points
 
 namespace glim {
 
@@ -58,10 +58,10 @@ public:
   // Logging params
   bool save_imu_rate_trajectory;
 
-  int num_threads; // Number of threads for preprocessing and per-factor
-                   // parallelism
-  int num_smoother_update_threads; // Number of threads for TBB parallelism in
-                                   // smoother update (should be kept 1)
+  int num_threads;  // Number of threads for preprocessing and per-factor
+                    // parallelism
+  int num_smoother_update_threads;  // Number of threads for TBB parallelism in
+                                    // smoother update (should be kept 1)
 };
 
 /**
@@ -74,22 +74,25 @@ public:
   OdometryEstimationIMU(std::unique_ptr<OdometryEstimationIMUParams> &&params);
   virtual ~OdometryEstimationIMU() override;
 
-  virtual void insert_imu(const double stamp, const Eigen::Vector3d &linear_acc,
-                          const Eigen::Vector3d &angular_vel) override;
+  virtual void                      insert_imu(const double           stamp,
+                                               const Eigen::Vector3d &linear_acc,
+                                               const Eigen::Vector3d &angular_vel) override;
   virtual EstimationFrame::ConstPtr insert_frame(
-      const PreprocessedFrame::Ptr           &frame,
-      std::vector<EstimationFrame::ConstPtr> &marginalized_frames) override;
-  virtual std::vector<EstimationFrame::ConstPtr>
-  get_remaining_frames() override;
+    const PreprocessedFrame::Ptr           &frame,
+    std::vector<EstimationFrame::ConstPtr> &marginalized_frames) override;
+  virtual std::vector<EstimationFrame::ConstPtr> get_remaining_frames()
+    override;
 
 protected:
-  virtual void create_frame(EstimationFrame::Ptr &frame) {}
-  virtual gtsam::NonlinearFactorGraph
-  create_factors(const int                                current,
-                 const std::shared_ptr<gtsam::ImuFactor> &imu_factor,
-                 gtsam::Values                           &new_values) = 0;
+  virtual void create_frame(EstimationFrame::Ptr &frame) {
+  }
+  virtual gtsam::NonlinearFactorGraph create_factors(
+    const int                                current,
+    const std::shared_ptr<gtsam::ImuFactor> &imu_factor,
+    gtsam::Values                           &new_values) = 0;
 
-  virtual void fallback_smoother() {}
+  virtual void fallback_smoother() {
+  }
   virtual void update_frames(const int                          current,
                              const gtsam::NonlinearFactorGraph &new_factors);
 
@@ -118,10 +121,10 @@ protected:
 
   // Optimizer
   using FixedLagSmootherExt =
-      gtsam_points::IncrementalFixedLagSmootherExtWithFallback;
+    gtsam_points::IncrementalFixedLagSmootherExtWithFallback;
   std::unique_ptr<FixedLagSmootherExt> smoother;
 
   std::shared_ptr<void> tbb_task_arena;
 };
 
-} // namespace glim
+}  // namespace glim

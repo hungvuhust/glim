@@ -25,18 +25,21 @@ private:
 
   void ui_callback();
 
-  std::vector<glim::SubMap::Ptr> load_submaps(guik::ProgressInterface& progress, const std::string& map_path);
+  std::vector<glim::SubMap::Ptr> load_submaps(guik::ProgressInterface& progress,
+                                              const std::string& map_path);
 
-  bool save_submaps(guik::ProgressInterface& progress, const std::string& save_path);
+  bool save_submaps(guik::ProgressInterface& progress,
+                    const std::string&       save_path);
 
 private:
-  std::shared_ptr<spdlog::logger> logger;
+  std::shared_ptr<spdlog::logger>      logger;
   std::unique_ptr<guik::ProgressModal> progress_modal;
 
   std::string map_path;       ///< Input map path
-  std::string init_map_path;  ///< Map path for initial auto loading (if path is given as a command line argument)
+  std::string init_map_path;  ///< Map path for initial auto loading (if path is
+                              ///< given as a command line argument)
 
-  std::vector<glim::SubMap::Ptr> submaps;    ///< Submaps
+  std::vector<glim::SubMap::Ptr>  submaps;   ///< Submaps
   std::unique_ptr<PointsSelector> selector;  ///< Points selector
 };
 

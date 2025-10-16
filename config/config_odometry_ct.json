@@ -25,8 +25,8 @@
     "constant_velocity_inf_scale": 1e3,
     "lm_max_iterations": 8,
     // smoother params
-    "smoother_lag": 1.0,
-    "use_isam2_dogleg": false,
+    "smoother_lag": 2.0,
+    "use_isam2_dogleg": true,
     "isam2_relinearize_skip": 1,
     "isam2_relinearize_thresh": 0.1,
     // Misc

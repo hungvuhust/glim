@@ -28,6 +28,7 @@ find_package(GTSAM 4.3 REQUIRED)
 find_package(gtsam_points 1.2.0 REQUIRED)
 find_package(OpenMP REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common io)
 
 if(BUILD_WITH_VIEWER)
   find_package(Iridescence REQUIRED)
@@ -94,6 +95,12 @@ add_library(glim SHARED
   src/glim/mapping/sub_mapping_passthrough.cpp
   src/glim/mapping/global_mapping.cpp
   src/glim/mapping/global_mapping_pose_graph.cpp
+  # localization
+  src/glim/localization/localization_params.cpp
+  src/glim/localization/localization_frame.cpp
+  src/glim/localization/map_manager.cpp
+  src/glim/localization/matching_evaluator.cpp
+  src/glim/localization/localization_cpu.cpp
   # GPU-related
   ${GPU_SRCS}
 )
@@ -102,6 +109,7 @@ target_include_directories(glim PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/json/include>
   $<INSTALL_INTERFACE:include/glim>
   ${OpenCV_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 target_link_libraries(glim
   Boost::boost
@@ -113,6 +121,7 @@ target_link_libraries(glim
   spdlog::spdlog
   $<TARGET_NAME_IF_EXISTS:Iridescence::Iridescence>
   ${OpenCV_LIBRARIES}
+  ${PCL_LIBRARIES}
 )
 if(BUILD_WITH_OPENCV)
   target_compile_definitions(glim PUBLIC GLIM_USE_OPENCV)
@@ -127,6 +136,7 @@ list(APPEND module_srcs
   src/glim/mapping/sub_mapping_passthrough_create.cpp
   src/glim/mapping/global_mapping_create.cpp
   src/glim/mapping/global_mapping_pose_graph_create.cpp
+  src/glim/localization/localization_cpu_create.cpp
 )
 if(BUILD_WITH_CUDA)
   list(APPEND module_srcs
@@ -189,6 +199,7 @@ if(BUILD_WITH_VIEWER)
 
   list(APPEND glim_LIBRARIES standard_viewer interactive_viewer memory_monitor map_editor)
 endif()
+
 
 #############
 ## Install ##

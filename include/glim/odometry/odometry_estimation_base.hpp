@@ -22,12 +22,15 @@ namespace glim {
 class OdometryEstimationBase {
 public:
   OdometryEstimationBase();
-  virtual ~OdometryEstimationBase() {}
+  virtual ~OdometryEstimationBase() {
+  }
 
   /**
    * @brief Returns true if the odometry estimation module requires IMU data
    */
-  virtual bool requires_imu() const { return true; }
+  virtual bool requires_imu() const {
+    return true;
+  }
 
 #ifdef GLIM_USE_OPENCV
   /**
@@ -44,7 +47,8 @@ public:
    * @param linear_acc   Linear acceleration
    * @param angular_vel  Angular velocity
    */
-  virtual void insert_imu(const double stamp, const Eigen::Vector3d &linear_acc,
+  virtual void insert_imu(const double           stamp,
+                          const Eigen::Vector3d &linear_acc,
                           const Eigen::Vector3d &angular_vel);
 
   /**
@@ -53,9 +57,9 @@ public:
    * @param marginalized_states         [out] Marginalized estimation frames
    * @return EstimationFrame::ConstPtr  Estimation result for the latest frame
    */
-  virtual EstimationFrame::ConstPtr
-  insert_frame(const PreprocessedFrame::Ptr           &frame,
-               std::vector<EstimationFrame::ConstPtr> &marginalized_states);
+  virtual EstimationFrame::ConstPtr insert_frame(
+    const PreprocessedFrame::Ptr           &frame,
+    std::vector<EstimationFrame::ConstPtr> &marginalized_states);
 
   /**
    * @brief Pop out the remaining non-marginalized frames (called at the end of
@@ -71,12 +75,12 @@ public:
    * @param so_name  Dynamic library name
    * @return         Loaded odometry estimation module
    */
-  static std::shared_ptr<OdometryEstimationBase>
-  load_module(const std::string &so_name);
+  static std::shared_ptr<OdometryEstimationBase> load_module(
+    const std::string &so_name);
 
 protected:
   // Logging
   std::shared_ptr<spdlog::logger> logger;
 };
 
-} // namespace glim
+}  // namespace glim

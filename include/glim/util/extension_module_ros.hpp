@@ -8,7 +8,8 @@
 namespace glim {
 
 /**
- * @brief Generic topic subscription that allows transparently subscribes to a topic through glim_rosnode and glim_rosbag
+ * @brief Generic topic subscription that allows transparently subscribes to a
+ * topic through glim_rosnode and glim_rosbag
  */
 class GenericTopicSubscription {
 public:
@@ -18,7 +19,8 @@ public:
    * @brief Constructor
    * @param topic Topic name
    */
-  GenericTopicSubscription(const std::string& topic) : topic(topic) {}
+  GenericTopicSubscription(const std::string& topic) : topic(topic) {
+  }
 
   /**
    * @brief Create a ROS subscriber
@@ -47,12 +49,16 @@ public:
    * @brief callback Message callback
    */
   template <typename Callback>
-  TopicSubscription(const std::string& topic, const Callback& callback) : GenericTopicSubscription(topic),
-                                                                          callback(callback) {}
+  TopicSubscription(const std::string& topic, const Callback& callback)
+    : GenericTopicSubscription(topic), callback(callback) {
+  }
 
-  virtual void create_subscriber(ros::NodeHandle& nh) override { sub = nh.subscribe<Msg>(topic, 10, callback); }
+  virtual void create_subscriber(ros::NodeHandle& nh) override {
+    sub = nh.subscribe<Msg>(topic, 10, callback);
+  }
 
-  virtual void insert_message_instance(const rosbag::MessageInstance& m) override {
+  virtual void insert_message_instance(
+    const rosbag::MessageInstance& m) override {
     const auto msg = m.instantiate<Msg>();
     if (msg == nullptr) {
       spdlog::warn("failed to instantiate message on {}", topic);
@@ -63,7 +69,7 @@ public:
   }
 
   const std::function<void(const std::shared_ptr<const Msg>&)> callback;
-  ros::Subscriber sub;
+  ros::Subscriber                                              sub;
 };
 
 /**
@@ -71,8 +77,10 @@ public:
  */
 class ExtensionModuleROS : public ExtensionModule {
 public:
-  ExtensionModuleROS() {}
-  virtual ~ExtensionModuleROS() {}
+  ExtensionModuleROS() {
+  }
+  virtual ~ExtensionModuleROS() {
+  }
 
   virtual std::vector<GenericTopicSubscription::Ptr> create_subscriptions() = 0;
 };

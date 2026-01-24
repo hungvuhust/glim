@@ -1,13 +1,13 @@
 #pragma once
 
-#include <mutex>
 #include <atomic>
-#include <thread>
-#include <memory>
-#include <vector>
-#include <unordered_map>
-#include <optional>
 #include <boost/weak_ptr.hpp>
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <thread>
+#include <unordered_map>
+#include <vector>
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -39,16 +39,16 @@ public:
 
   virtual bool ok() const override;
 
-  void invoke(const std::function<void()>& task);
+  void invoke(const std::function<void()> &task);
 
 private:
-  Eigen::Isometry3f resolve_pose(
-    const std::shared_ptr<const EstimationFrame>& frame);
+  Eigen::Isometry3f
+  resolve_pose(const std::shared_ptr<const EstimationFrame> &frame);
 
   void set_callbacks();
   void viewer_loop();
 
-  bool drawable_filter(const std::string& name);
+  bool drawable_filter(const std::string &name);
   void drawable_selection();
 
 private:
@@ -81,12 +81,12 @@ private:
   double                      last_median_distance;
   std::vector<double>         last_voxel_resolutions;
 
-  using FactorLine = std::
-    tuple<Eigen::Vector3f, Eigen::Vector3f, Eigen::Vector4f, Eigen::Vector4f>;
+  using FactorLine = std::tuple<Eigen::Vector3f, Eigen::Vector3f,
+                                Eigen::Vector4f, Eigen::Vector4f>;
   using FactorLineGetter =
-    std::function<std::optional<FactorLine>(const gtsam::NonlinearFactor*)>;
+      std::function<std::optional<FactorLine>(const gtsam::NonlinearFactor *)>;
   std::vector<
-    std::pair<std::weak_ptr<gtsam::NonlinearFactor>, FactorLineGetter>>
+      std::pair<std::weak_ptr<gtsam::NonlinearFactor>, FactorLineGetter>>
                                                        odometry_factor_lines;
   std::unordered_map<std::uint64_t, Eigen::Isometry3f> odometry_poses;
 
@@ -124,4 +124,4 @@ private:
   // Logging
   std::shared_ptr<spdlog::logger> logger;
 };
-}  // namespace glim
+} // namespace glim

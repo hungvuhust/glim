@@ -46,7 +46,7 @@
   "glim_ros": {
     // Backend modules
     "enable_local_mapping": true,
-    "enable_global_mapping": false,
+    "enable_global_mapping": true,
     // Points config
     "keep_raw_points": false,
     // IMU config
@@ -56,7 +56,7 @@
     // TF config
     "imu_frame_id": "livox_frame",
     "lidar_frame_id": "livox_frame",
-    "base_frame_id": "base_link",
+    "base_frame_id": "livox_frame",
     "odom_frame_id": "odom",
     "map_frame_id": "map",
     "publish_imu2lidar": false,
@@ -64,7 +64,7 @@
     // Extension modules
     "extension_modules": [
       "libmemory_monitor.so",
-      "libstandard_viewer.so",
+      "libstandard_viewer.so", //TODO: uncomment this when rviz viewer is ready,
       "librviz_viewer.so"
       // "libimu_validator.so"
     ],

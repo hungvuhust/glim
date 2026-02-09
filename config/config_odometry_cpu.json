@@ -10,18 +10,18 @@
     // Initialization params
     "initialization_mode": "LOOSE",
     "initialization_window_size": 3.0,
-    "init_pose_damping_scale": 1e10,
+    "init_pose_damping_scale": 1e12,
     // Optimizer params
-    "smoother_lag": 10.0,
+    "smoother_lag": 5.0,
     "use_isam2_dogleg": true,
     "isam2_relinearize_skip": 1,
     "isam2_relinearize_thresh": 0.1,
     "fix_imu_bias": false,
     // Registration settings
     "registration_type": "GICP",
-    "max_iterations": 10,
+    "max_iterations": 20,
     "lru_thresh": 100,
-    "target_downsampling_rate": 0.1,
+    "target_downsampling_rate": 0.4,
     // GICP + iVox params
     "ivox_resolution": 1.0,
     "ivox_min_dist": 0.1,

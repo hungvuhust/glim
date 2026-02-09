@@ -53,14 +53,18 @@
     "imu_time_offset": 0.0,
     "points_time_offset": 0.0,
     "acc_scale": 9.81,
+    // "acc_scale": 1.0,
     // TF config
     "imu_frame_id": "livox_frame",
     "lidar_frame_id": "livox_frame",
     "base_frame_id": "livox_frame",
+    // "imu_frame_id": "camera_imu_optical_frame",
+    // "lidar_frame_id": "camera_depth_optical_frame",
+    // "base_frame_id": "camera_link",
     "odom_frame_id": "odom",
     "map_frame_id": "map",
     "publish_imu2lidar": false,
-    "tf_time_offset": 1e-6,
+    "tf_time_offset": 1e-5,
     // Extension modules
     "extension_modules": [
       "libmemory_monitor.so",
@@ -71,6 +75,8 @@
     // Topics
     "imu_topic": "/livox/imu",
     "points_topic": "/livox/lidar",
+    // "imu_topic": "/camera/realsense2_camera_node/imu",
+    // "points_topic": "/depth/points",
     "image_topic": "/image",
     // QoS options
     "imu_qos": {

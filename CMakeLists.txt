@@ -9,7 +9,7 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-option(BUILD_WITH_CUDA "Build with GPU support" OFF)
+option(BUILD_WITH_CUDA "Build with GPU support" ON)
 option(BUILD_WITH_CUDA_MULTIARCH "Build with GPU cross-platform support" OFF)
 option(BUILD_WITH_VIEWER "Build with visualizer" ON)
 option(BUILD_WITH_MARCH_NATIVE "Build with -march=native" OFF)
@@ -95,13 +95,6 @@ add_library(glim SHARED
   src/glim/mapping/sub_mapping_passthrough.cpp
   src/glim/mapping/global_mapping.cpp
   src/glim/mapping/global_mapping_pose_graph.cpp
-  # localization
-  src/glim/localization/async_localization.cpp
-  src/glim/localization/localization_params.cpp
-  src/glim/localization/localization_frame.cpp
-  src/glim/localization/map_manager.cpp
-  src/glim/localization/matching_evaluator.cpp
-  src/glim/localization/localization_cpu.cpp
   # GPU-related
   ${GPU_SRCS}
 )
@@ -137,7 +130,6 @@ list(APPEND module_srcs
   src/glim/mapping/sub_mapping_passthrough_create.cpp
   src/glim/mapping/global_mapping_create.cpp
   src/glim/mapping/global_mapping_pose_graph_create.cpp
-  src/glim/localization/localization_cpu_create.cpp
 )
 if(BUILD_WITH_CUDA)
   list(APPEND module_srcs

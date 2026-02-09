@@ -1,28 +1,28 @@
 #include <glim/viewer/map_editor.hpp>
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <filesystem>
-#include <spdlog/spdlog.h>
 #include <spdlog/sinks/ringbuffer_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
-#include <portable-file-dialogs.h>
-#include <guik/spdlog_sink.hpp>
-#include <guik/recent_files.hpp>
-#include <guik/model_control.hpp>
-#include <guik/progress_modal.hpp>
-#include <guik/viewer/light_viewer.hpp>
+#include <GLFW/glfw3.h>
 #include <glk/drawable_container.hpp>
-#include <glk/pointcloud_buffer.hpp>
 #include <glk/indexed_pointcloud_buffer.hpp>
+#include <glk/pointcloud_buffer.hpp>
 #include <gtsam_points/ann/kdtree2.hpp>
-#include <gtsam_points/types/point_cloud_cpu.hpp>
 #include <gtsam_points/features/normal_estimation.hpp>
 #include <gtsam_points/segmentation/min_cut.hpp>
 #include <gtsam_points/segmentation/region_growing.hpp>
+#include <gtsam_points/types/point_cloud_cpu.hpp>
 #include <gtsam_points/util/fast_floor.hpp>
-#include <GLFW/glfw3.h>
+#include <guik/model_control.hpp>
+#include <guik/progress_modal.hpp>
+#include <guik/recent_files.hpp>
+#include <guik/spdlog_sink.hpp>
+#include <guik/viewer/light_viewer.hpp>
+#include <portable-file-dialogs.h>
 
 #include <glim/mapping/sub_map.hpp>
 #include <glim/util/logging.hpp>
@@ -30,15 +30,14 @@
 namespace glim {
 
 ////////////////////////////////////////////////////////////////////////
-MapEditor::MapEditor(const std::string& init_map_path)
-  : init_map_path(init_map_path) {
+MapEditor::MapEditor(const std::string &init_map_path)
+    : init_map_path(init_map_path) {
   logger = get_default_logger();
 
   auto viewer = guik::viewer();
 
-  viewer->register_ui_callback("log",
-                               guik::create_logger_ui(get_ringbuffer_sink(),
-                                                      0.8));
+  viewer->register_ui_callback(
+      "log", guik::create_logger_ui(get_ringbuffer_sink(), 0.8));
   viewer->register_ui_callback("ui_callback", [this] { ui_callback(); });
 
   progress_modal.reset(new guik::ProgressModal("progress"));
@@ -46,12 +45,9 @@ MapEditor::MapEditor(const std::string& init_map_path)
   selector.reset(new PointsSelector(logger));
 }
 
-MapEditor::~MapEditor() {
-}
+MapEditor::~MapEditor() {}
 
-void MapEditor::run() {
-  guik::viewer()->spin();
-}
+void MapEditor::run() { guik::viewer()->spin(); }
 
 void MapEditor::main_menu() {
   bool start_open_map = false;
@@ -106,7 +102,7 @@ void MapEditor::main_menu() {
       // Open a dialog to select a map path
       map_path = pfd::select_folder("Select a dump directory",
                                     recent_files.most_recent())
-                   .result();
+                     .result();
     } else {
       // If the map path is given as a command line argument, use it
       map_path = init_map_path;
@@ -119,15 +115,15 @@ void MapEditor::main_menu() {
 
       // Start map loading
       progress_modal->open<std::vector<glim::SubMap::Ptr>>(
-        "open", [this](guik::ProgressInterface& progress) {
-          return load_submaps(progress, map_path);
-        });
+          "open", [this](guik::ProgressInterface &progress) {
+            return load_submaps(progress, map_path);
+          });
     }
   }
 
   // Catch the loaded submaps
   const auto loaded_submaps =
-    progress_modal->run<std::vector<glim::SubMap::Ptr>>("open");
+      progress_modal->run<std::vector<glim::SubMap::Ptr>>("open");
   if (loaded_submaps && !loaded_submaps->empty()) {
     submaps = *loaded_submaps;
     selector->set_submaps(submaps);
@@ -136,16 +132,15 @@ void MapEditor::main_menu() {
   // Map save modal
   if (start_save_map) {
     guik::RecentFiles recent_files("offline_viewer_save");
-    const std::string path =
-      pfd::select_folder("Select a save directory", recent_files.most_recent())
-        .result();
+    const std::string path = pfd::select_folder("Select a save directory",
+                                                recent_files.most_recent())
+                                 .result();
     if (!path.empty()) {
       recent_files.push(path);
-      progress_modal->open<bool>("save",
-                                 [this,
-                                  path](guik::ProgressInterface& progress) {
-                                   return save_submaps(progress, path);
-                                 });
+      progress_modal->open<bool>(
+          "save", [this, path](guik::ProgressInterface &progress) {
+            return save_submaps(progress, path);
+          });
     }
   }
 
@@ -167,9 +162,9 @@ void MapEditor::ui_callback() {
   selector->draw_ui();
 }
 
-std::vector<glim::SubMap::Ptr> MapEditor::load_submaps(
-  guik::ProgressInterface& progress,
-  const std::string&       map_path) {
+std::vector<glim::SubMap::Ptr>
+MapEditor::load_submaps(guik::ProgressInterface &progress,
+                        const std::string       &map_path) {
   progress.set_title("Load submaps");
   progress.set_text("Now loading");
   std::ifstream ifs(map_path + "/graph.txt");
@@ -200,12 +195,12 @@ std::vector<glim::SubMap::Ptr> MapEditor::load_submaps(
 
     if (!submaps[i]->frame->has_normals()) {
       auto frame = std::dynamic_pointer_cast<gtsam_points::PointCloudCPU>(
-        submaps[i]->frame);
+          submaps[i]->frame);
       if (!frame) {
         logger->warn("Failed to cast frame to PointCloudCPU");
       } else {
         frame->add_normals(gtsam_points::estimate_normals(
-          frame->points, frame->covs, frame->size(), 4));
+            frame->points, frame->covs, frame->size(), 4));
       }
     }
   }
@@ -215,8 +210,8 @@ std::vector<glim::SubMap::Ptr> MapEditor::load_submaps(
   return submaps;
 }
 
-bool MapEditor::save_submaps(guik::ProgressInterface& progress,
-                             const std::string&       save_path) {
+bool MapEditor::save_submaps(guik::ProgressInterface &progress,
+                             const std::string       &save_path) {
   progress.set_title("Save map");
   progress.set_maximum(submaps.size());
 
@@ -225,11 +220,11 @@ bool MapEditor::save_submaps(guik::ProgressInterface& progress,
   if (save_path != this->map_path) {
     logger->info("Copying metadata from {} to {}", map_path, save_path);
     progress.set_text(
-      fmt::format("Copying metadata from {} to {}", map_path, save_path));
-    std::filesystem::copy(std::filesystem::path(map_path),
-                          std::filesystem::path(save_path),
-                          std::filesystem::copy_options::recursive |
-                            std::filesystem::copy_options::overwrite_existing);
+        fmt::format("Copying metadata from {} to {}", map_path, save_path));
+    std::filesystem::copy(
+        std::filesystem::path(map_path), std::filesystem::path(save_path),
+        std::filesystem::copy_options::recursive |
+            std::filesystem::copy_options::overwrite_existing);
   }
 
   for (size_t i = 0; i < submaps.size(); i++) {
@@ -241,4 +236,4 @@ bool MapEditor::save_submaps(guik::ProgressInterface& progress,
   return true;
 }
 
-}  // namespace glim
+} // namespace glim

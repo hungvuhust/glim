@@ -1,12 +1,12 @@
-#include <unistd.h>
-#include <thread>
 #include <fstream>
-#include <sstream>
-#include <iostream>
-#include <glim/util/logging.hpp>
 #include <glim/util/extension_module.hpp>
+#include <glim/util/logging.hpp>
 #include <gtsam_points/config.hpp>
 #include <gtsam_points/cuda/cuda_memory.hpp>
+#include <iostream>
+#include <sstream>
+#include <thread>
+#include <unistd.h>
 
 namespace glim {
 
@@ -30,7 +30,7 @@ public:
       auto now = std::chrono::high_resolution_clock::now();
       if (std::chrono::duration_cast<std::chrono::seconds>(now -
                                                            last_update_time)
-            .count() < 5) {
+              .count() < 5) {
         continue;
       }
       last_update_time = now;
@@ -40,15 +40,13 @@ public:
       size_t gpu_total = 0;
       gtsam_points::cuda_mem_get_info(&gpu_free, &gpu_total);
       const double gpu_used =
-        static_cast<double>(gpu_total - gpu_free) / gpu_total;
+          static_cast<double>(gpu_total - gpu_free) / gpu_total;
 
       if (gpu_used > 0.8) {
         const size_t gpu_used_mb  = (gpu_total - gpu_free) / 1024 / 1024;
         const size_t gpu_total_mb = gpu_total / 1024 / 1024;
-        logger->warn("GPU memory usage: {}/{} MB {:.2f}%",
-                     gpu_used_mb,
-                     gpu_total_mb,
-                     gpu_used * 100);
+        logger->warn("GPU memory usage: {}/{} MB {:.2f}%", gpu_used_mb,
+                     gpu_total_mb, gpu_used * 100);
       }
 #endif
 
@@ -56,16 +54,14 @@ public:
       mem_usage(mem_free_kb, mem_total_kb);
 
       const double cpu_used =
-        static_cast<double>(mem_total_kb - mem_free_kb) / mem_total_kb;
+          static_cast<double>(mem_total_kb - mem_free_kb) / mem_total_kb;
 
       if (cpu_used > 0.8) {
         const double used_mb =
-          static_cast<double>(mem_total_kb - mem_free_kb) / 1024.0;
+            static_cast<double>(mem_total_kb - mem_free_kb) / 1024.0;
         const double total_mb = static_cast<double>(mem_total_kb) / 1024.0;
-        logger->warn("CPU memory usage: {:.2f} / {:.2f} MB {:.2f}%",
-                     used_mb,
-                     total_mb,
-                     cpu_used * 100);
+        logger->warn("CPU memory usage: {:.2f} / {:.2f} MB {:.2f}%", used_mb,
+                     total_mb, cpu_used * 100);
       }
 
       size_t rss_kb, shared_kb;
@@ -77,7 +73,7 @@ public:
     }
   }
 
-  void mem_usage(size_t& mem_free_kb, size_t& mem_total_kb) {
+  void mem_usage(size_t &mem_free_kb, size_t &mem_total_kb) {
     mem_free_kb  = 0;
     mem_total_kb = 0;
 
@@ -103,7 +99,7 @@ public:
     }
   }
 
-  void rss_mem_usage(size_t& rss_kb, size_t& shared_kb) {
+  void rss_mem_usage(size_t &rss_kb, size_t &shared_kb) {
     rss_kb    = 0;
     shared_kb = 0;
 
@@ -129,8 +125,8 @@ private:
   std::shared_ptr<spdlog::logger> logger;
 };
 
-}  // namespace glim
+} // namespace glim
 
-extern "C" glim::ExtensionModule* create_extension_module() {
+extern "C" glim::ExtensionModule *create_extension_module() {
   return new glim::MemoryMonitor();
 }

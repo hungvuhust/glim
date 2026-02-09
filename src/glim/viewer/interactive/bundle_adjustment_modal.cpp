@@ -32,13 +32,12 @@ BundleAdjustmentModal::BundleAdjustmentModal() {
   progress_modal.reset(new guik::ProgressModal("bundle_adjustment_progress"));
 }
 
-BundleAdjustmentModal::~BundleAdjustmentModal() {
-}
+BundleAdjustmentModal::~BundleAdjustmentModal() {}
 
 void BundleAdjustmentModal::set_frames(
-  const std::vector<SubMap::ConstPtr>&  submaps,
-  const std::vector<Eigen::Isometry3d>& submap_poses,
-  const Eigen::Vector3d&                center) {
+    const std::vector<SubMap::ConstPtr>  &submaps,
+    const std::vector<Eigen::Isometry3d> &submap_poses,
+    const Eigen::Vector3d                &center) {
   //
   this->submaps.clear();
   this->submap_poses.clear();
@@ -51,9 +50,8 @@ void BundleAdjustmentModal::set_frames(
     this->submaps.push_back(submaps[i]);
     this->submap_poses.push_back(Eigen::Translation3d(-center) *
                                  submap_poses[i]);
-    this->submap_drawables.push_back(
-      std::make_shared<glk::PointCloudBuffer>(submaps[i]->frame->points,
-                                              submaps[i]->frame->size()));
+    this->submap_drawables.push_back(std::make_shared<glk::PointCloudBuffer>(
+        submaps[i]->frame->points, submaps[i]->frame->size()));
   }
 
   this->radius = 1.0f;
@@ -74,26 +72,20 @@ gtsam::NonlinearFactor::shared_ptr BundleAdjustmentModal::run() {
 
   gtsam::NonlinearFactor::shared_ptr factor;
 
-  if (ImGui::BeginPopupModal("bundle adjustment",
-                             nullptr,
+  if (ImGui::BeginPopupModal("bundle adjustment", nullptr,
                              ImGuiWindowFlags_AlwaysAutoResize)) {
     // Draw canvas
-    ImGui::BeginChild("canvas",
-                      ImVec2(512, 512),
-                      false,
-                      ImGuiWindowFlags_ChildWindow |
-                        ImGuiWindowFlags_AlwaysAutoResize |
-                        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
-                        ImGuiWindowFlags_NoSavedSettings |
-                        ImGuiWindowFlags_NoNavFocus);
+    ImGui::BeginChild(
+        "canvas", ImVec2(512, 512), false,
+        ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_AlwaysAutoResize |
+            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoNavFocus);
     if (ImGui::IsWindowFocused()) {
       canvas->mouse_control();
     }
     draw_canvas();
-    ImGui::Image(reinterpret_cast<void*>(canvas->frame_buffer->color().id()),
-                 ImVec2(512, 512),
-                 ImVec2(0, 1),
-                 ImVec2(1, 0));
+    ImGui::Image(reinterpret_cast<void *>(canvas->frame_buffer->color().id()),
+                 ImVec2(512, 512), ImVec2(0, 1), ImVec2(1, 0));
     ImGui::EndChild();
 
     if (submaps.size() < 2) {
@@ -107,22 +99,19 @@ gtsam::NonlinearFactor::shared_ptr BundleAdjustmentModal::run() {
       update_indicator();
     }
     ImGui::SameLine();
-    ImGui::Text("Points:%d Eigenvalues:%.3f %.3f %.3f",
-                num_points,
-                eigenvalues[0],
-                eigenvalues[1],
-                eigenvalues[2]);
+    ImGui::Text("Points:%d Eigenvalues:%.3f %.3f %.3f", num_points,
+                eigenvalues[0], eigenvalues[1], eigenvalues[2]);
 
     ImGui::Separator();
-    ImGui::DragFloatRange2(
-      "Radius Range", &min_radius, &max_radius, 0.01f, 0.01f, 100.0f);
-    ImGui::DragIntRange2(
-      "Num points Range", &min_points, &max_points, 1, 2, 8192 * 10);
+    ImGui::DragFloatRange2("Radius Range", &min_radius, &max_radius, 0.01f,
+                           0.01f, 100.0f);
+    ImGui::DragIntRange2("Num points Range", &min_points, &max_points, 1, 2,
+                         8192 * 10);
     ImGui::DragFloat("Plane eps", &plane_eps, 0.0001f, 0.0001f, 0.1f);
 
     if (ImGui::Button("Auto Radius")) {
       progress_modal->open<double>("auto radius",
-                                   [this](guik::ProgressInterface& progress) {
+                                   [this](guik::ProgressInterface &progress) {
                                      return auto_radius(progress);
                                    });
     }
@@ -163,14 +152,14 @@ void BundleAdjustmentModal::update_indicator() {
   eigenvalues       = calc_eigenvalues(points);
 }
 
-std::vector<std::pair<int, int>> BundleAdjustmentModal::extract_points(
-  double radius) {
+std::vector<std::pair<int, int>>
+BundleAdjustmentModal::extract_points(double radius) {
   const double                     radius_sq = radius * radius;
   std::vector<std::pair<int, int>> points_in_radius;
 
   for (int i = 0; i < submaps.size(); i++) {
     const int   submap_id = submaps[i]->id;
-    const auto& frame     = submaps[i]->frame;
+    const auto &frame     = submaps[i]->frame;
 
     for (int j = 0; j < frame->size(); j++) {
       Eigen::Vector4d pt = submap_poses[i] * frame->points[j];
@@ -185,17 +174,17 @@ std::vector<std::pair<int, int>> BundleAdjustmentModal::extract_points(
 }
 
 Eigen::Vector3d BundleAdjustmentModal::calc_eigenvalues(
-  const std::vector<std::pair<int, int>>& point_indices) {
+    const std::vector<std::pair<int, int>> &point_indices) {
   Eigen::Vector4d sum_pts   = Eigen::Vector4d::Zero();
   Eigen::Matrix4d sum_cross = Eigen::Matrix4d::Zero();
 
-  for (const auto& submap_point : point_indices) {
+  for (const auto &submap_point : point_indices) {
     const int submap_index = submap_point.first;
     const int point_index  = submap_point.second;
 
     const Eigen::Vector4d pt =
-      submap_poses[submap_index] *
-      submaps[submap_index]->frame->points[point_index];
+        submap_poses[submap_index] *
+        submaps[submap_index]->frame->points[point_index];
 
     sum_pts += pt;
     sum_cross += pt * pt.transpose();
@@ -203,7 +192,7 @@ Eigen::Vector3d BundleAdjustmentModal::calc_eigenvalues(
 
   Eigen::Vector4d mean = sum_pts / point_indices.size();
   Eigen::Matrix4d cov =
-    (sum_cross - mean * sum_pts.transpose()) / point_indices.size();
+      (sum_cross - mean * sum_pts.transpose()) / point_indices.size();
 
   Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> eig;
   eig.computeDirect(cov.block<3, 3>(0, 0));
@@ -211,7 +200,7 @@ Eigen::Vector3d BundleAdjustmentModal::calc_eigenvalues(
   return eig.eigenvalues();
 }
 
-double BundleAdjustmentModal::auto_radius(guik::ProgressInterface& progress) {
+double BundleAdjustmentModal::auto_radius(guik::ProgressInterface &progress) {
   progress.set_title("Auto radius estimation");
   progress.set_text("Extracting initial points");
   progress.set_maximum(10);
@@ -221,7 +210,7 @@ double BundleAdjustmentModal::auto_radius(guik::ProgressInterface& progress) {
 
   for (int i = 0; i < 10; i++) {
     progress.set_text(
-      (boost::format("Trial %d/%d R:%.3f") % i % 10 % current_radius).str());
+        (boost::format("Trial %d/%d R:%.3f") % i % 10 % current_radius).str());
     progress.increment();
 
     double trial_radius;
@@ -261,12 +250,12 @@ gtsam::NonlinearFactor::shared_ptr BundleAdjustmentModal::create_factor() {
   const auto extracted_points = extract_points(radius);
 
   gtsam_points::PlaneEVMFactor::shared_ptr factor(
-    new gtsam_points::PlaneEVMFactor());
-  for (const auto& submap_point : extracted_points) {
+      new gtsam_points::PlaneEVMFactor());
+  for (const auto &submap_point : extracted_points) {
     const int submap_index = submap_point.first;
     const int point_index  = submap_point.second;
 
-    const auto& point = submaps[submap_index]->frame->points[point_index];
+    const auto &point = submaps[submap_index]->frame->points[point_index];
 
     factor->add(point.head<3>(), X(submaps[submap_index]->id));
   }
@@ -298,8 +287,8 @@ void BundleAdjustmentModal::draw_canvas() {
   canvas->shader->set_uniform("material_color",
                               Eigen::Vector4f(1.0f, 0.0f, 0.0f, 0.5f));
   canvas->shader->set_uniform(
-    "model_matrix",
-    (Eigen::Isometry3f::Identity() * Eigen::UniformScaling(radius)).matrix());
+      "model_matrix",
+      (Eigen::Isometry3f::Identity() * Eigen::UniformScaling(radius)).matrix());
 
   glk::Primitives::sphere()->draw(*canvas->shader);
 
@@ -308,4 +297,4 @@ void BundleAdjustmentModal::draw_canvas() {
   glDisable(GL_CULL_FACE);
 }
 
-}  // namespace glim
+} // namespace glim
